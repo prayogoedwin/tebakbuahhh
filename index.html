@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guess the Fruit</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  #fruit-img {
+    max-width: 300px;
+    margin-bottom: 20px;
+  }
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 0 10px;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  #result {
+    margin-top: 20px;
+  }
+  /* Styles for modal */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+  }
+  .modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 10px;
+    position: relative;
+  }
+  .close {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  /* Style for modal image */
+  .modal-content img {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+<h1>TEBAK BUAH UNTUK HANIM</h1>
+<img id="fruit-img" src="" alt="Fruit">
+<div>
+  <button class="btn" id="option1"></button>
+  <button class="btn" id="option2"></button>
+</div>
+<div id="result"></div>
+
+<audio id="correct-sound" src="https://www.myinstants.com/media/sounds/yeay-childrens.mp3"></audio>
+<audio id="incorrect-sound" src="https://www.myinstants.com/media/sounds/neg-wrongbuzzer.mp3"></audio>
+
+<!-- Modal for correct answer -->
+<div id="modal-correct" class="modal">
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p>Benar!</p>
+    <img src="https://img.freepik.com/premium-vector/cartoon-drawing-cat-with-word-happy-front_444663-141.jpg" alt="Yay">
+  </div>
+</div>
+
+<!-- Modal for incorrect answer -->
+<div id="modal-incorrect" class="modal">
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p>Salah!</p>
+    <img src="https://png.pngtree.com/png-vector/20230422/ourmid/pngtree-dizzy-cat-vector-png-image_6721314.png" alt="Oops">
+  </div>
+</div>
+
+<script>
+  // JSON data of fruits and their image URLs
+  var fruits = [
+    {
+      "nama": "Apel",
+      "gambar": "https://waapple.org/wp-content/uploads/2021/06/Variety_Cosmic-Crisp-transparent-658x677.png"
+    },
+    {
+      "nama": "Jeruk",
+      "gambar": "https://keboncau-pamarayan.desa.id/asset/uploads/2021/09/istockphoto-1140677637-612x612-1.jpg"
+    },
+    {
+      "nama": "Semangka",
+      "gambar": "https://rsisurabaya.com/wp-content/uploads/2023/12/artikel-1.png"
+    },
+    {
+      "nama": "Durian",
+      "gambar": "https://i2.wp.com/lapakbuah.com/wp-content/uploads/2021/07/Durian.jpg?fit=800%2C700&ssl=1"
+    },
+    {
+      "nama": "Melon",
+      "gambar": "https://pasarsegar.co.id/wp-content/uploads/2021/11/eae606d9-8185-4849-91b8-e15d9bd0c6dd_Buah-Melon-2-kg-4.jpg"
+    },
+    {
+      "nama": "Pisang",
+      "gambar": "https://eksporpetani.com/wp-content/uploads/2022/02/Pisang-Cavendish-Lampung-Copy.png"
+    }
+  ];
+
+  var currentIndex = -1;
+  var currentFruit;
+
+  function getRandomFruit() {
+    var newIndex;
+    do {
+      newIndex = Math.floor(Math.random() * fruits.length);
+    } while (newIndex === currentIndex); // Make sure the same fruit doesn't repeat consecutively
+    currentIndex = newIndex;
+    return fruits[currentIndex];
+  }
+
+  function displayFruit() {
+    currentFruit = getRandomFruit();
+    document.getElementById('fruit-img').src = currentFruit.gambar;
+
+    // Randomly choose which button will display the correct fruit name
+    var correctButton = Math.random() < 0.5 ? 'option1' : 'option2';
+    var incorrectButton = correctButton === 'option1' ? 'option2' : 'option1';
+
+    // Set the correct fruit name to the correct button
+    document.getElementById(correctButton).innerText = currentFruit.nama;
+
+    // Set the incorrect fruit name to the incorrect button
+    var otherFruit;
+    do {
+      otherFruit = getRandomFruit().nama;
+    } while (otherFruit === currentFruit.nama); // Make sure the incorrect fruit is different from the current fruit
+    document.getElementById(incorrectButton).innerText = otherFruit;
+  }
+
+  function showModal(modalId) {
+    var modal = document.getElementById(modalId);
+    var span = modal.querySelector('.close');
+    modal.style.display = "block";
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+  }
+
+  function checkAnswer(answer) {
+    if (answer === currentFruit.nama) {
+      showModal('modal-correct');
+      document.getElementById('correct-sound').play();
+    } else {
+      showModal('modal-incorrect');
+      document.getElementById('incorrect-sound').play();
+    }
+    setTimeout(function() {
+      displayFruit();
+    }, 1000);
+  }
+
+  document.getElementById('option1').addEventListener('click', function() {
+    checkAnswer(document.getElementById('option1').innerText);
+  });
+
+  document.getElementById('option2').addEventListener('click', function() {
+    checkAnswer(document.getElementById('option2').innerText);
+  });
+
+  displayFruit();
+</script>
+</body>
+</html>
